@@ -5,6 +5,7 @@ import entity.Book;
 import exception.ApplicationException;
 import exception.ErrorCode;
 import repository.AuthorRepository;
+import repository.impl.mapper.AuthorMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -22,11 +23,15 @@ public class AuthorRepositoryImpl implements AuthorRepository {
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public Author add(Author author) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JdbcUtils.getConnection();
+            con = JdbcUtils.getConnection();
 
-            PreparedStatement ps = connection.prepareStatement(
+            ps = con.prepareStatement(
                     "insert into author (name, description) values (?, ?)",
                     Statement.RETURN_GENERATED_KEYS
             );
@@ -34,7 +39,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
             ps.setString(2, author.getDescription());
 
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
+            rs = ps.getGeneratedKeys();
             if (!rs.next()) {
                 throw new ApplicationException(
                         ErrorCode.INTERNAL_ERROR,
@@ -44,98 +49,78 @@ public class AuthorRepositoryImpl implements AuthorRepository {
 
             author.setId(rs.getLong("id"));
 
-            JdbcUtils.closeResultSet(rs);
             return author;
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
-        }
-    }
-
-    @Override
-    public Author update(Author author) throws ApplicationException {
-        try {
-            Connection connection = JdbcUtils.getConnection();
-
-            PreparedStatement ps = connection.prepareStatement(
-                    "update author set name = ?, description = ? where id = ?"
-            );
-            ps.setString(1, author.getName());
-            ps.setString(2, author.getDescription());
-            ps.setLong(3, author.getId());
-
-            ps.executeUpdate();
-
-            JdbcUtils.closeStatement(ps);
-            return author;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
         }
     }
 
     @Override
     public List<Author> get(String name) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JdbcUtils.getConnection();
+            con = JdbcUtils.getConnection();
 
             StringBuilder sb = new StringBuilder("select id, name, description from author");
             if (name != null) {
                 sb.append(" where lower(name) like lower('%' || ? || '%')");
             }
 
-            PreparedStatement ps = connection.prepareStatement(sb.toString());
+            ps = con.prepareStatement(sb.toString());
             if (name != null) {
                 ps.setString(1, name);
             }
 
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             List<Author> result = new ArrayList<>();
 
             while (rs.next()) {
-                Author author = new Author();
-                author.setId(rs.getLong("id"));
-                author.setName(rs.getString("name"));
-                author.setDescription(rs.getString("description"));
-
-                result.add(author);
+                result.add(AuthorMapper.map(rs));
             }
 
-            JdbcUtils.closeResultSet(rs);
             return result;
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
         }
     }
 
     @Override
     public Author getById(Long id) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JdbcUtils.getConnection();
+            con = JdbcUtils.getConnection();
 
-            PreparedStatement ps = connection.prepareStatement(
+            ps = con.prepareStatement(
                     "select a.id author_id," +
-                        "       a.name author_name," +
-                        "       a.description author_description," +
-                        "       b.id book_id," +
-                        "       b.name book_name," +
-                        "       b.description book_description" +
-                        "  from author a left join book b on a.id = b.author" +
-                        " where a.id = ?"
+                            "       a.name author_name," +
+                            "       a.description author_description," +
+                            "       b.id book_id," +
+                            "       b.name book_name," +
+                            "       b.description book_description" +
+                            "  from author a left join book b on a.id = b.author" +
+                            " where a.id = ?"
             );
             ps.setLong(1, id);
 
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             Author author = null;
             while (rs.next()) {
                 if (author == null) {
-                    author = new Author();
-                    author.setId(rs.getLong("author_id"));
-                    author.setName(rs.getString("author_name"));
-                    author.setDescription(rs.getString("author_description"));
+                    author = AuthorMapper.map(rs);
                     author.setBooks(new ArrayList<>());
                 }
 
+                // вот здесь получится, что ты 2 раза вычитываешь book_id, но черт с ним
                 long bookId = rs.getLong("book_id");
                 if (!rs.wasNull()) {
                     Book book = new Book();
@@ -148,11 +133,33 @@ public class AuthorRepositoryImpl implements AuthorRepository {
                 }
             }
 
-            JdbcUtils.closeResultSet(rs);
             return author;
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
         }
     }
 
+    @Override
+    public Author update(Author author) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = JdbcUtils.getConnection();
+
+            ps = con.prepareStatement("update author set name = ?, description = ? where id = ?");
+            ps.setString(1, author.getName());
+            ps.setString(2, author.getDescription());
+            ps.setLong(3, author.getId());
+
+            ps.executeUpdate();
+
+            return author;
+        } catch (SQLException e) {
+            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeStatementQuietly(ps, con);
+        }
+    }
 }

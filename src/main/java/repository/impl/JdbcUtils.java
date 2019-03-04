@@ -54,31 +54,23 @@ class JdbcUtils {
         return t;
     }
 
-    static void closeResultSet(ResultSet rs) {
-        Statement st = null;
+    private static void closeResultSetQuietly(ResultSet rs) {
         try {
-            st = rs.getStatement();
+            if (rs != null) {
+                rs.close();
+            }
         } catch (SQLException ignore) {/*NOP*/}
-
-        try {
-            rs.close();
-        } catch (SQLException ignore) {/*NOP*/}
-
-        closeStatement(st);
     }
 
-    static void closeStatement(Statement st) {
-        Connection con = null;
-        try {
-            con = st != null ? st.getConnection() : null;
-        } catch (SQLException ignore) {/*NOP*/}
-
+    private static void closeStatementQuietly(Statement st) {
         try {
             if (st != null) {
                 st.close();
             }
         } catch (SQLException ignore) {/*NOP*/}
+    }
 
+    private static void closeConnectionQuietly(Connection con) {
         try {
             if (con != null) {
                 con.close();
@@ -86,4 +78,14 @@ class JdbcUtils {
         } catch (SQLException ignore) {/*NOP*/}
     }
 
+    static void closeResultSetQuietly(ResultSet rs, Statement st, Connection con) {
+        closeResultSetQuietly(rs);
+        closeStatementQuietly(st);
+        closeConnectionQuietly(con);
+    }
+
+    static void closeStatementQuietly(Statement st, Connection con) {
+        closeStatementQuietly(st);
+        closeConnectionQuietly(con);
+    }
 }

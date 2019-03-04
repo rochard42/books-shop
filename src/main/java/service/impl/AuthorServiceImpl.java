@@ -10,10 +10,6 @@ import service.AuthorService;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class AuthorServiceImpl implements AuthorService {
 
@@ -38,21 +34,6 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Author update(Long id, String name, String description) throws ApplicationException {
-        Author author = getById(id);
-
-        author.setName(name);
-        author.setDescription(description);
-
-        return authorRepository.update(author);
-    }
-
-    @Override
-    public List<Author> get(String name) throws ApplicationException {
-        return authorRepository.get(name);
-    }
-
-    @Override
     public Author getById(Long id) throws ApplicationException {
         Author author = authorRepository.getById(id);
 
@@ -67,10 +48,24 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    public List<Author> get(String name) throws ApplicationException {
+        return authorRepository.get(name);
+    }
+
+    @Override
     public List<Book> getBooks(Long authorId) throws ApplicationException {
         Author author = getById(authorId);
 
         return author.getBooks() == null ? Collections.emptyList() : author.getBooks();
     }
 
+    @Override
+    public Author update(Long id, String name, String description) throws ApplicationException {
+        Author author = getById(id);
+
+        author.setName(name);
+        author.setDescription(description);
+
+        return authorRepository.update(author);
+    }
 }

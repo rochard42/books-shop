@@ -10,12 +10,11 @@ public interface AuthorService {
 
     Author add(String name, String description) throws ApplicationException;
 
-    Author update(Long id, String name, String description) throws ApplicationException;
+    Author getById(Long id) throws ApplicationException;
 
     List<Author> get(String name) throws ApplicationException;
 
-    Author getById(Long id) throws ApplicationException;
-
     List<Book> getBooks(Long authorId) throws ApplicationException;
 
+    Author update(Long id, String name, String description) throws ApplicationException;
 }

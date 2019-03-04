@@ -5,6 +5,7 @@ import entity.Book;
 import exception.ApplicationException;
 import exception.ErrorCode;
 import repository.BookRepository;
+import repository.impl.mapper.AuthorMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -22,11 +23,15 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
+    @SuppressWarnings("Duplicates")
     public Book add(Book book) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JdbcUtils.getConnection();
+            con = JdbcUtils.getConnection();
 
-            PreparedStatement ps = connection.prepareStatement(
+            ps = con.prepareStatement(
                     "insert into book (name, description, author) values (?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS
             );
@@ -35,115 +40,31 @@ public class BookRepositoryImpl implements BookRepository {
             ps.setLong(3, book.getAuthor().getId());
 
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
+            rs = ps.getGeneratedKeys();
             if (!rs.next()) {
                 throw new ApplicationException(
                         ErrorCode.INTERNAL_ERROR,
-                        "internal error"
+                        "Internal error"
                 );
             }
 
             book.setId(rs.getLong("id"));
 
-            JdbcUtils.closeResultSet(rs);
             return book;
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
-        }
-    }
-
-    @Override
-    public Book update(Book book) throws ApplicationException {
-        try {
-            Connection connection = JdbcUtils.getConnection();
-
-            PreparedStatement ps = connection.prepareStatement(
-                    "update book set name = ?, description = ?, author = ? where id = ?"
-            );
-            ps.setString(1, book.getName());
-            ps.setString(2, book.getDescription());
-            ps.setLong(3, book.getAuthor().getId());
-            ps.setLong(4, book.getId());
-
-            ps.executeUpdate();
-
-            JdbcUtils.closeStatement(ps);
-            return book;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        }
-    }
-
-    @Override
-    public Book getById(Long id) throws ApplicationException {
-
-        try {
-            Connection connection = JdbcUtils.getConnection();
-
-            PreparedStatement ps = connection.prepareStatement(
-                    "select a.id author_id," +
-                            "   a.name author_name," +
-                            "   a.description author_description," +
-                            "   b.id book_id," +
-                            "   b.name book_name," +
-                            "   b.description book_description" +
-                            "   from book b left join author a on b.author = a.id" +
-                            "   where b.id = ?"
-            );
-
-            ps.setLong(1, id);
-
-            ResultSet rs = ps.executeQuery();
-
-            Book book = null;
-            if (rs.next()) {
-                Author author = new Author();
-                author.setId(rs.getLong("author_id"));
-                author.setName(rs.getString("author_name"));
-                author.setDescription(rs.getString("author_description"));
-
-                book = new Book();
-                book.setId(rs.getLong("book_id"));
-                book.setName(rs.getString("book_name"));
-                book.setDescription(rs.getString("book_description"));
-                book.setAuthor(author);
-            }
-
-            JdbcUtils.closeResultSet(rs);
-            return book;
-
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        }
-    }
-
-    @Override
-    public void remove(Long id) throws ApplicationException {
-
-        try {
-            Connection connection = JdbcUtils.getConnection();
-
-            PreparedStatement ps = connection.prepareStatement(
-                    "delete from book where id = ?"
-            );
-
-            ps.setLong(1, id);
-
-            ResultSet rs = ps.executeQuery();
-
-            JdbcUtils.closeResultSet(rs);
-
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
         }
     }
 
     @Override
     public List<Book> get(String name, String authorName) throws ApplicationException {
-
-
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JdbcUtils.getConnection();
+            con = JdbcUtils.getConnection();
 
             StringBuilder sb = new StringBuilder("select");
 
@@ -158,7 +79,7 @@ public class BookRepositoryImpl implements BookRepository {
                 sb.append(" and lower(a.name) like lower('%' || ? || '%')");
             }
 
-            PreparedStatement ps = connection.prepareStatement(sb.toString());
+            ps = con.prepareStatement(sb.toString());
 
             int paramIndex = 1;
             if (name != null) {
@@ -168,19 +89,13 @@ public class BookRepositoryImpl implements BookRepository {
                 ps.setString(paramIndex++, authorName);
             }
 
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             List<Book> books = new ArrayList<>();
-            Author author = null;
-            Book book = null;
-
             while (rs.next()) {
-                author = new Author();
-                author.setId(rs.getLong("author_id"));
-                author.setName(rs.getString("author_name"));
-                author.setDescription(rs.getString("author_description"));
+                Author author = AuthorMapper.map("author_", rs);
 
-                book = new Book();
+                Book book = new Book();
                 book.setName(rs.getString("book_name"));
                 book.setId(rs.getLong("book_id"));
                 book.setDescription(rs.getString("book_description"));
@@ -188,9 +103,96 @@ public class BookRepositoryImpl implements BookRepository {
 
                 books.add(book);
             }
+
             return books;
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+        }
+    }
+
+    @Override
+    public Book getById(Long id) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            con = JdbcUtils.getConnection();
+
+            ps = con.prepareStatement(
+                    "select a.id author_id," +
+                            "   a.name author_name," +
+                            "   a.description author_description," +
+                            "   b.id book_id," +
+                            "   b.name book_name," +
+                            "   b.description book_description" +
+                            "   from book b left join author a on b.author = a.id" +
+                            "   where b.id = ?"
+            );
+
+            ps.setLong(1, id);
+
+            rs = ps.executeQuery();
+
+            Book book = null;
+            if (rs.next()) {
+                Author author = AuthorMapper.map("author_", rs);
+
+                book = new Book();
+                book.setId(rs.getLong("book_id"));
+                book.setName(rs.getString("book_name"));
+                book.setDescription(rs.getString("book_description"));
+                book.setAuthor(author);
+            }
+
+            return book;
+        } catch (SQLException e) {
+            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+        }
+    }
+
+
+    @Override
+    public Book update(Book book) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = JdbcUtils.getConnection();
+
+            ps = con.prepareStatement("update book set name = ?, description = ?, author = ? where id = ?");
+            ps.setString(1, book.getName());
+            ps.setString(2, book.getDescription());
+            ps.setLong(3, book.getAuthor().getId());
+            ps.setLong(4, book.getId());
+
+            ps.executeUpdate();
+
+            return book;
+        } catch (SQLException e) {
+            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeStatementQuietly(ps, con);
+        }
+    }
+
+    @Override
+    public void remove(Book book) throws ApplicationException {
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = JdbcUtils.getConnection();
+
+            ps = con.prepareStatement("delete from book where id = ?");
+            ps.setLong(1, book.getId());
+
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw JdbcUtils.translateSQLException(e);
+        } finally {
+            JdbcUtils.closeStatementQuietly(ps, con);
         }
     }
 }

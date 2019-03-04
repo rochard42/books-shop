@@ -4,13 +4,11 @@ import entity.Author;
 import entity.Book;
 import exception.ApplicationException;
 import exception.ErrorCode;
-import repository.AuthorRepository;
 import repository.BookRepository;
-import repository.impl.AuthorRepositoryImpl;
 import repository.impl.BookRepositoryImpl;
+import service.AuthorService;
 import service.BookService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BookServiceImpl implements BookService {
@@ -19,7 +17,7 @@ public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepository = BookRepositoryImpl.getInstance();
 
-    private final AuthorRepository authorRepository = AuthorRepositoryImpl.getInstance();
+    private final AuthorService authorService = AuthorServiceImpl.getInstance();
 
     private BookServiceImpl() {
     }
@@ -30,36 +28,14 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book add(String name, String description, Long authorId) throws ApplicationException {
-        Author author = authorRepository.getById(authorId);
-
-        if (author == null) {
-            throw new ApplicationException(ErrorCode.INVALID_ARGUMENT, "Author with id %s not found");
-        }
+        Author author = authorService.getById(authorId);
 
         Book book = new Book();
-
         book.setName(name);
         book.setDescription(description);
         book.setAuthor(author);
 
         return bookRepository.add(book);
-    }
-
-    @Override
-    public Book update(Long id, String name, String description, Long authorId) throws ApplicationException {
-        Author author = authorRepository.getById(authorId);
-
-        if (author == null) {
-            throw new ApplicationException(ErrorCode.INVALID_ARGUMENT, "Author with id %s not found");
-        }
-
-        Book book = getById(id);
-
-        book.setName(name);
-        book.setDescription(description);
-        book.setAuthor(author);
-
-        return bookRepository.update(book);
     }
 
     @Override
@@ -82,7 +58,22 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    public Book update(Long id, String name, String description, Long authorId) throws ApplicationException {
+        Author author = authorService.getById(authorId);
+
+        Book book = getById(id);
+
+        book.setName(name);
+        book.setDescription(description);
+        book.setAuthor(author);
+
+        return bookRepository.update(book);
+    }
+
+    @Override
     public void remove(Long id) throws  ApplicationException{
-        bookRepository.remove(id);
+        Book book = getById(id);
+
+        bookRepository.remove(book);
     }
 }

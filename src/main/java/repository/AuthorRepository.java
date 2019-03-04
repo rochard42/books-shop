@@ -9,10 +9,9 @@ public interface AuthorRepository {
 
     Author add(Author author) throws ApplicationException;
 
-    Author update(Author author) throws ApplicationException;
-
     List<Author> get(String name) throws ApplicationException;
 
     Author getById(Long id) throws ApplicationException;
 
+    Author update(Author author) throws ApplicationException;
 }
