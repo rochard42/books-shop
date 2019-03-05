@@ -73,8 +73,16 @@ public class BookController extends BaseController {
         Map<String, String> params = parseBody(req);
         String name = params.get("name");
         String description = params.get("description");
-        // try если не число
-        Long authorId = Long.parseLong(params.get("authorId"));
+        Long authorId;
+        try {
+            authorId = Long.parseLong(params.get("authorId"));
+        } catch (Exception e) {
+            throw new ApplicationException(
+                    ErrorCode.INVALID_ARGUMENT,
+                    String.format("%s is not valid author id", params.get("authorId")),
+                    e
+            );
+        }
 
         Book book = bookService.add(name, description, authorId);
 
