@@ -54,7 +54,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -88,7 +88,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -133,7 +133,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -155,7 +155,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeStatementQuietly(ps, con);
+            JdbcUtils.closeQuietly(ps, con);
         }
     }
 }

@@ -55,7 +55,7 @@ public class BookRepositoryImpl implements BookRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -105,7 +105,7 @@ public class BookRepositoryImpl implements BookRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -143,7 +143,7 @@ public class BookRepositoryImpl implements BookRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeResultSetQuietly(rs, ps, con);
+            JdbcUtils.closeQuietly(rs, ps, con);
         }
     }
 
@@ -166,7 +166,7 @@ public class BookRepositoryImpl implements BookRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeStatementQuietly(ps, con);
+            JdbcUtils.closeQuietly(ps, con);
         }
     }
 
@@ -184,7 +184,7 @@ public class BookRepositoryImpl implements BookRepository {
         } catch (SQLException e) {
             throw JdbcUtils.translateSQLException(e);
         } finally {
-            JdbcUtils.closeStatementQuietly(ps, con);
+            JdbcUtils.closeQuietly(ps, con);
         }
     }
 }

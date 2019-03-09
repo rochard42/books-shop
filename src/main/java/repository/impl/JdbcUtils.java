@@ -54,7 +54,7 @@ class JdbcUtils {
         return t;
     }
 
-    private static void closeResultSetQuietly(ResultSet rs) {
+    private static void closeQuietly(ResultSet rs) {
         try {
             if (rs != null) {
                 rs.close();
@@ -62,7 +62,7 @@ class JdbcUtils {
         } catch (SQLException ignore) {/*NOP*/}
     }
 
-    private static void closeStatementQuietly(Statement st) {
+    private static void closeQuietly(Statement st) {
         try {
             if (st != null) {
                 st.close();
@@ -70,7 +70,7 @@ class JdbcUtils {
         } catch (SQLException ignore) {/*NOP*/}
     }
 
-    private static void closeConnectionQuietly(Connection con) {
+    private static void closeQuietly(Connection con) {
         try {
             if (con != null) {
                 con.close();
@@ -78,14 +78,14 @@ class JdbcUtils {
         } catch (SQLException ignore) {/*NOP*/}
     }
 
-    static void closeResultSetQuietly(ResultSet rs, Statement st, Connection con) {
-        closeResultSetQuietly(rs);
-        closeStatementQuietly(st);
-        closeConnectionQuietly(con);
+    static void closeQuietly(ResultSet rs, Statement st, Connection con) {
+        closeQuietly(rs);
+        closeQuietly(st);
+        closeQuietly(con);
     }
 
-    static void closeStatementQuietly(Statement st, Connection con) {
-        closeStatementQuietly(st);
-        closeConnectionQuietly(con);
+    static void closeQuietly(Statement st, Connection con) {
+        closeQuietly(st);
+        closeQuietly(con);
     }
 }

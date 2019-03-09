@@ -4,21 +4,21 @@ import entity.Author;
 import entity.Book;
 import exception.ApplicationException;
 import exception.ErrorCode;
+import repository.AuthorRepository;
 import repository.BookRepository;
+import repository.impl.AuthorRepositoryImpl;
 import repository.impl.BookRepositoryImpl;
-import service.AuthorService;
 import service.BookService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BookServiceImpl implements BookService {
 
     private static final BookService INSTANCE = new BookServiceImpl();
 
-    private final BookRepository bookRepository = BookRepositoryImpl.getInstance();
+    private final AuthorRepository authorRepository = AuthorRepositoryImpl.getInstance();
 
-    private final AuthorService authorService = AuthorServiceImpl.getInstance();
+    private final BookRepository bookRepository = BookRepositoryImpl.getInstance();
 
     private BookServiceImpl() {
     }
@@ -60,7 +60,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(Long id, String name, String description, Long authorId) throws ApplicationException {
-        Author author = authorService.getById(authorId);
+        Author author = getAuthorById(authorId);
 
         Book book = getById(id);
 
@@ -79,12 +79,13 @@ public class BookServiceImpl implements BookService {
     }
 
     private Author getAuthorById(Long id) throws ApplicationException {
-        Author author;
+        Author author = authorRepository.getById(id);
 
-        try {
-            author = authorService.getById(id);
-        } catch (Exception e) {
-            throw new ApplicationException(ErrorCode.INVALID_ARGUMENT, String.format("Author with id %s does not exist", id));
+        if (author == null) {
+            throw new ApplicationException(
+                    ErrorCode.INVALID_ARGUMENT,
+                    String.format("Author with id %s not found", id)
+            );
         }
 
         return author;
