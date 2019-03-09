@@ -9,6 +9,7 @@ import repository.impl.BookRepositoryImpl;
 import service.AuthorService;
 import service.BookService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookServiceImpl implements BookService {
@@ -28,7 +29,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book add(String name, String description, Long authorId) throws ApplicationException {
-        Author author = authorService.getById(authorId);
+        Author author = getAuthorById(authorId);
 
         Book book = new Book();
         book.setName(name);
@@ -75,5 +76,17 @@ public class BookServiceImpl implements BookService {
         Book book = getById(id);
 
         bookRepository.remove(book);
+    }
+
+    private Author getAuthorById(Long id) throws ApplicationException {
+        Author author;
+
+        try {
+            author = authorService.getById(id);
+        } catch (Exception e) {
+            throw new ApplicationException(ErrorCode.INVALID_ARGUMENT, String.format("Author with id %s does not exist", id));
+        }
+
+        return author;
     }
 }
