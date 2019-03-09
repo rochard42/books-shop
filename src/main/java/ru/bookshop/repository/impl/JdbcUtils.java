@@ -1,7 +1,7 @@
-package repository.impl;
+package ru.bookshop.repository.impl;
 
-import exception.ApplicationException;
-import exception.ErrorCode;
+import ru.bookshop.exception.ApplicationException;
+import ru.bookshop.exception.ErrorCode;
 import org.postgresql.Driver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

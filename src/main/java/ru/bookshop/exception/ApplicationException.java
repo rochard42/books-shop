@@ -1,4 +1,4 @@
-package exception;
+package ru.bookshop.exception;
 
 public class ApplicationException extends Exception {
 

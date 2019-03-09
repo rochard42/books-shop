@@ -1,6 +1,6 @@
-package repository.impl.mapper;
+package ru.bookshop.repository.impl.mapper;
 
-import entity.Book;
+import ru.bookshop.entity.Book;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

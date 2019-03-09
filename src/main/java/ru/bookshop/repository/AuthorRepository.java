@@ -1,7 +1,7 @@
-package repository;
+package ru.bookshop.repository;
 
-import entity.Author;
-import exception.ApplicationException;
+import ru.bookshop.entity.Author;
+import ru.bookshop.exception.ApplicationException;
 
 import java.util.List;
 

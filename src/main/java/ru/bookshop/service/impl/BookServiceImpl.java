@@ -1,14 +1,15 @@
-package service.impl;
+package ru.bookshop.service.impl;
 
-import entity.Author;
-import entity.Book;
-import exception.ApplicationException;
-import exception.ErrorCode;
-import repository.AuthorRepository;
-import repository.BookRepository;
-import repository.impl.AuthorRepositoryImpl;
-import repository.impl.BookRepositoryImpl;
-import service.BookService;
+import ru.bookshop.ParameterNames;
+import ru.bookshop.entity.Author;
+import ru.bookshop.entity.Book;
+import ru.bookshop.exception.ApplicationException;
+import ru.bookshop.exception.ErrorCode;
+import ru.bookshop.repository.AuthorRepository;
+import ru.bookshop.repository.BookRepository;
+import ru.bookshop.repository.impl.AuthorRepositoryImpl;
+import ru.bookshop.repository.impl.BookRepositoryImpl;
+import ru.bookshop.service.BookService;
 
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book add(String name, String description, Long authorId) throws ApplicationException {
+        Validator.checkNotNull(ParameterNames.NAME, name);
+        Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
+        Validator.checkNotNull(ParameterNames.AUTHOR_ID, authorId);
+
         Author author = getAuthorById(authorId);
 
         Book book = new Book();
@@ -40,7 +45,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book getById(Long id) throws ApplicationException {
+    public Book getById(long id) throws ApplicationException {
         Book book = bookRepository.getById(id);
 
         if (book == null) {
@@ -59,7 +64,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Book update(Long id, String name, String description, Long authorId) throws ApplicationException {
+    public Book update(long id, String name, String description, Long authorId) throws ApplicationException {
+        Validator.checkNotNull(ParameterNames.NAME, name);
+        Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
+        Validator.checkNotNull(ParameterNames.AUTHOR_ID, authorId);
+
         Author author = getAuthorById(authorId);
 
         Book book = getById(id);
@@ -72,7 +81,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void remove(Long id) throws  ApplicationException{
+    public void remove(long id) throws  ApplicationException{
         Book book = getById(id);
 
         bookRepository.remove(book);

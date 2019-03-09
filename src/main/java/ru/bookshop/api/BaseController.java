@@ -1,13 +1,12 @@
-package api;
+package ru.bookshop.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import exception.ApplicationException;
-import exception.ErrorCode;
+import ru.bookshop.exception.ApplicationException;
+import ru.bookshop.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +46,7 @@ class BaseController extends HttpServlet {
 
                     handler.handle(urlParts, req, resp);
                 } catch (ApplicationException e) {
-                    log.error("Application exception occurred: ", e);
+                    log.error("Application ru.bookshop.exception occurred: ", e);
                     sendError(e, resp);
                 }
                 requestHandled = true;

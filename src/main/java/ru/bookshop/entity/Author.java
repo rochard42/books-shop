@@ -1,8 +1,11 @@
-package entity;
+package ru.bookshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.List;
 import java.util.Objects;
 
-public class Book {
+public class Author {
 
     private Long id;
 
@@ -10,7 +13,8 @@ public class Book {
 
     private String description;
 
-    private Author author;
+    @JsonIgnore
+    private List<Book> books;
 
     public Long getId() {
         return id;
@@ -36,37 +40,37 @@ public class Book {
         this.description = description;
     }
 
-    public Author getAuthor() {
-        return author;
+    public List<Book> getBooks() {
+        return books;
     }
 
-    public void setAuthor(Author author) {
-        this.author = author;
+    public void setBooks(List<Book> books) {
+        this.books = books;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Book book = (Book) o;
-        return Objects.equals(id, book.id) &&
-                Objects.equals(name, book.name) &&
-                Objects.equals(description, book.description) &&
-                Objects.equals(author, book.author);
+        Author author = (Author) o;
+        return Objects.equals(id, author.id) &&
+                Objects.equals(name, author.name) &&
+                Objects.equals(description, author.description) &&
+                Objects.equals(books, author.books);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, author);
+        return Objects.hash(id, name, description, books);
     }
 
     @Override
     public String toString() {
-        return "Book{" +
+        return "Author{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", author=" + author +
+                ", books=" + books +
                 '}';
     }
 

@@ -1,4 +1,4 @@
-package api;
+package ru.bookshop.api;
 
 final class Paths {
 

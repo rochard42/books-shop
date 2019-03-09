@@ -1,12 +1,13 @@
-package service.impl;
+package ru.bookshop.service.impl;
 
-import entity.Author;
-import entity.Book;
-import exception.ApplicationException;
-import exception.ErrorCode;
-import repository.AuthorRepository;
-import repository.impl.AuthorRepositoryImpl;
-import service.AuthorService;
+import ru.bookshop.ParameterNames;
+import ru.bookshop.entity.Author;
+import ru.bookshop.entity.Book;
+import ru.bookshop.exception.ApplicationException;
+import ru.bookshop.exception.ErrorCode;
+import ru.bookshop.repository.AuthorRepository;
+import ru.bookshop.repository.impl.AuthorRepositoryImpl;
+import ru.bookshop.service.AuthorService;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,9 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public Author add(String name, String description) throws ApplicationException {
+        Validator.checkNotNull(ParameterNames.NAME, name);
+        Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
+
         Author author = new Author();
         author.setName(name);
         author.setDescription(description);
@@ -34,7 +38,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public Author getById(Long id) throws ApplicationException {
+    public Author getById(long id) throws ApplicationException {
         Author author = authorRepository.getById(id);
 
         if (author == null) {
@@ -53,14 +57,17 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public List<Book> getBooks(Long authorId) throws ApplicationException {
+    public List<Book> getBooks(long authorId) throws ApplicationException {
         Author author = getById(authorId);
 
         return author.getBooks() == null ? Collections.emptyList() : author.getBooks();
     }
 
     @Override
-    public Author update(Long id, String name, String description) throws ApplicationException {
+    public Author update(long id, String name, String description) throws ApplicationException {
+        Validator.checkNotNull(ParameterNames.NAME, name);
+        Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
+
         Author author = getById(id);
 
         author.setName(name);

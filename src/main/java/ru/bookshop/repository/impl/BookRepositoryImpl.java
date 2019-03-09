@@ -1,12 +1,12 @@
-package repository.impl;
+package ru.bookshop.repository.impl;
 
-import entity.Author;
-import entity.Book;
-import exception.ApplicationException;
-import exception.ErrorCode;
-import repository.BookRepository;
-import repository.impl.mapper.AuthorMapper;
-import repository.impl.mapper.BookMapper;
+import ru.bookshop.entity.Author;
+import ru.bookshop.entity.Book;
+import ru.bookshop.exception.ApplicationException;
+import ru.bookshop.exception.ErrorCode;
+import ru.bookshop.repository.BookRepository;
+import ru.bookshop.repository.impl.mapper.AuthorMapper;
+import ru.bookshop.repository.impl.mapper.BookMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
