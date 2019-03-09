@@ -6,6 +6,7 @@ import exception.ApplicationException;
 import exception.ErrorCode;
 import repository.AuthorRepository;
 import repository.impl.mapper.AuthorMapper;
+import repository.impl.mapper.BookMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -116,17 +117,12 @@ public class AuthorRepositoryImpl implements AuthorRepository {
             Author author = null;
             while (rs.next()) {
                 if (author == null) {
-                    author = AuthorMapper.map(rs);
+                    author = AuthorMapper.map("author_", rs);
                     author.setBooks(new ArrayList<>());
                 }
 
-                // вот здесь получится, что ты 2 раза вычитываешь book_id, но черт с ним
-                long bookId = rs.getLong("book_id");
-                if (!rs.wasNull()) {
-                    Book book = new Book();
-                    book.setId(bookId);
-                    book.setName(rs.getString("book_name"));
-                    book.setDescription(rs.getString("book_description"));
+                if (rs.getObject("book_id") != null) {
+                    Book book = BookMapper.map("book_", rs);
                     book.setAuthor(author);
 
                     author.getBooks().add(book);

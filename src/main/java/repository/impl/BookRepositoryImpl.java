@@ -6,6 +6,7 @@ import exception.ApplicationException;
 import exception.ErrorCode;
 import repository.BookRepository;
 import repository.impl.mapper.AuthorMapper;
+import repository.impl.mapper.BookMapper;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -94,11 +95,7 @@ public class BookRepositoryImpl implements BookRepository {
             List<Book> books = new ArrayList<>();
             while (rs.next()) {
                 Author author = AuthorMapper.map("author_", rs);
-
-                Book book = new Book();
-                book.setName(rs.getString("book_name"));
-                book.setId(rs.getLong("book_id"));
-                book.setDescription(rs.getString("book_description"));
+                Book book = BookMapper.map("book_", rs);
                 book.setAuthor(author);
 
                 books.add(book);
@@ -138,11 +135,7 @@ public class BookRepositoryImpl implements BookRepository {
             Book book = null;
             if (rs.next()) {
                 Author author = AuthorMapper.map("author_", rs);
-
-                book = new Book();
-                book.setId(rs.getLong("book_id"));
-                book.setName(rs.getString("book_name"));
-                book.setDescription(rs.getString("book_description"));
+                book = BookMapper.map("book_", rs);
                 book.setAuthor(author);
             }
 
@@ -153,7 +146,6 @@ public class BookRepositoryImpl implements BookRepository {
             JdbcUtils.closeResultSetQuietly(rs, ps, con);
         }
     }
-
 
     @Override
     public Book update(Book book) throws ApplicationException {
