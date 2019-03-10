@@ -1,5 +1,6 @@
 package ru.bookshop.repository.impl;
 
+import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
 import ru.bookshop.exception.ApplicationException;
@@ -12,16 +13,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Repository
 public class AuthorRepositoryImpl implements AuthorRepository {
-
-    private static final AuthorRepository INSTANCE = new AuthorRepositoryImpl();
-
-    private AuthorRepositoryImpl() {
-    }
-
-    public static AuthorRepository getInstance() {
-        return INSTANCE;
-    }
 
     @Override
     @SuppressWarnings("Duplicates")

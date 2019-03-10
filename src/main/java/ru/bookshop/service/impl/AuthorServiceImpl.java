@@ -1,5 +1,7 @@
 package ru.bookshop.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.bookshop.ParameterNames;
 import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
@@ -12,17 +14,14 @@ import ru.bookshop.service.AuthorService;
 import java.util.Collections;
 import java.util.List;
 
+@Service
 public class AuthorServiceImpl implements AuthorService {
 
-    private static final AuthorService INSTANCE = new AuthorServiceImpl();
+    private final AuthorRepository authorRepository;
 
-    private final AuthorRepository authorRepository = AuthorRepositoryImpl.getInstance();
-
-    private AuthorServiceImpl() {
-    }
-
-    public static AuthorService getInstance() {
-        return INSTANCE;
+    @Autowired
+    public AuthorServiceImpl(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
     }
 
     @Override

@@ -1,13 +1,15 @@
 package ru.bookshop.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationContext;
 import ru.bookshop.ParameterNames;
 import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
 import ru.bookshop.exception.ApplicationException;
 import ru.bookshop.service.AuthorService;
-import ru.bookshop.service.impl.AuthorServiceImpl;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +28,17 @@ public class AuthorController extends BaseController {
     private final Map<Pattern, RequestHandler> postHandlers = new HashMap<>();
     private final Map<Pattern, RequestHandler> putHandlers = new HashMap<>();
 
-    private final AuthorService authorService = AuthorServiceImpl.getInstance();
+    private AuthorService authorService;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        ApplicationContext applicationContext =
+                (ApplicationContext) config.getServletContext().getAttribute("applicationContext");
+
+        this.authorService = applicationContext.getBean(AuthorService.class);
+    }
 
     public AuthorController() {
         getHandlers.put(Pattern.compile("^(/authors)/?$"), this::get);

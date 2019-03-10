@@ -1,12 +1,13 @@
 package ru.bookshop.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.ApplicationContext;
 import ru.bookshop.ParameterNames;
 import ru.bookshop.entity.Book;
 import ru.bookshop.exception.ApplicationException;
 import ru.bookshop.service.BookService;
-import ru.bookshop.service.impl.BookServiceImpl;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-@WebServlet (urlPatterns = Paths.BOOKS + "/*")
+@WebServlet(urlPatterns = Paths.BOOKS + "/*")
 public class BookController extends BaseController {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -26,7 +27,17 @@ public class BookController extends BaseController {
     private final Map<Pattern, BaseController.RequestHandler> postHandlers = new HashMap<>();
     private final Map<Pattern, BaseController.RequestHandler> putHandlers = new HashMap<>();
 
-    private final BookService bookService = BookServiceImpl.getInstance();
+    private BookService bookService;
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+
+        ApplicationContext applicationContext =
+                (ApplicationContext) config.getServletContext().getAttribute("applicationContext");
+
+        this.bookService = applicationContext.getBean(BookService.class);
+    }
 
     public BookController() {
         getHandlers.put(Pattern.compile("^(/books)/?$"), this::get);
