@@ -1,5 +1,6 @@
 package ru.bookshop.repository.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
@@ -16,6 +17,13 @@ import java.util.List;
 @Repository
 public class BookRepositoryImpl implements BookRepository {
 
+    private final DataSource dataSource;
+
+    @Autowired
+    public BookRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @Override
     @SuppressWarnings("Duplicates")
     public Book add(Book book) throws ApplicationException {
@@ -23,7 +31,7 @@ public class BookRepositoryImpl implements BookRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement(
                     "insert into book (name, description, author) values (?, ?, ?)",
@@ -58,7 +66,7 @@ public class BookRepositoryImpl implements BookRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             StringBuilder sb = new StringBuilder("select");
 
@@ -108,7 +116,7 @@ public class BookRepositoryImpl implements BookRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement(
                     "select a.id author_id," +
@@ -145,7 +153,7 @@ public class BookRepositoryImpl implements BookRepository {
         Connection con = null;
         PreparedStatement ps = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement("update book set name = ?, description = ?, author = ? where id = ?");
             ps.setString(1, book.getName());
@@ -168,7 +176,7 @@ public class BookRepositoryImpl implements BookRepository {
         Connection con = null;
         PreparedStatement ps = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement("delete from book where id = ?");
             ps.setLong(1, book.getId());

@@ -1,5 +1,6 @@
 package ru.bookshop.repository.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
@@ -16,6 +17,13 @@ import java.util.List;
 @Repository
 public class AuthorRepositoryImpl implements AuthorRepository {
 
+    private final DataSource dataSource;
+
+    @Autowired
+    public AuthorRepositoryImpl(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @Override
     @SuppressWarnings("Duplicates")
     public Author add(Author author) throws ApplicationException {
@@ -23,7 +31,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = new DataSource().getConnection();
 
             ps = con.prepareStatement(
                     "insert into author (name, description) values (?, ?)",
@@ -57,7 +65,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             StringBuilder sb = new StringBuilder("select id, name, description from author");
             if (name != null) {
@@ -91,7 +99,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement(
                     "select a.id author_id," +
@@ -135,7 +143,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         Connection con = null;
         PreparedStatement ps = null;
         try {
-            con = JdbcUtils.getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement("update author set name = ?, description = ? where id = ?");
             ps.setString(1, author.getName());
