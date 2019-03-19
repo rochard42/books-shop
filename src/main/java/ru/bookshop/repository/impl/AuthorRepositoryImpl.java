@@ -1,5 +1,6 @@
 package ru.bookshop.repository.impl;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
@@ -17,10 +18,10 @@ import java.util.List;
 @Repository
 public class AuthorRepositoryImpl implements AuthorRepository {
 
-    private final DataSource dataSource;
+    private final BasicDataSource dataSource;
 
     @Autowired
-    public AuthorRepositoryImpl(DataSource dataSource) {
+    public AuthorRepositoryImpl(BasicDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
@@ -31,7 +32,7 @@ public class AuthorRepositoryImpl implements AuthorRepository {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            con = new DataSource().getConnection();
+            con = dataSource.getConnection();
 
             ps = con.prepareStatement(
                     "insert into author (name, description) values (?, ?)",

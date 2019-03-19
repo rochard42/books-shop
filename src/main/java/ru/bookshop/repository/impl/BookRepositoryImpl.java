@@ -1,5 +1,6 @@
 package ru.bookshop.repository.impl;
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
@@ -17,10 +18,10 @@ import java.util.List;
 @Repository
 public class BookRepositoryImpl implements BookRepository {
 
-    private final DataSource dataSource;
+    private final BasicDataSource dataSource;
 
     @Autowired
-    public BookRepositoryImpl(DataSource dataSource) {
+    public BookRepositoryImpl(BasicDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
