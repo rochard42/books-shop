@@ -1,14 +1,14 @@
 package ru.bookshop.api;
 
-final class Paths {
+public final class Paths {
 
-    static final String AUTHORS = "/authors";
+    public static final String AUTHORS = "/authors";
 
-    static final String BOOKS = "/books";
+    public static final String BOOKS = "/books";
 
-    static final String SESSIONS = "/sessions";
+    public static final String SESSIONS = "/sessions";
 
-    static final String USERS = "/users";
+    public static final String USERS = "/users";
 
     private Paths() {
     }

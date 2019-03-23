@@ -1,7 +1,8 @@
 package ru.bookshop.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import ru.bookshop.ParameterNames;
 import ru.bookshop.entity.Book;
 import ru.bookshop.exception.ApplicationException;
@@ -27,16 +28,13 @@ public class BookController extends BaseController {
     private final Map<Pattern, BaseController.RequestHandler> postHandlers = new HashMap<>();
     private final Map<Pattern, BaseController.RequestHandler> putHandlers = new HashMap<>();
 
+    @Autowired
     private BookService bookService;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        ApplicationContext applicationContext =
-                (ApplicationContext) config.getServletContext().getAttribute("applicationContext");
-
-        this.bookService = applicationContext.getBean(BookService.class);
+        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
     }
 
     public BookController() {
