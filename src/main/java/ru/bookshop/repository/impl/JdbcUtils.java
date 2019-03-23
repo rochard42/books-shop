@@ -11,24 +11,6 @@ import java.sql.*;
 
 class JdbcUtils {
 
-    private static final Logger log = LoggerFactory.getLogger(JdbcUtils.class);
-
-    private static final String URL = "jdbc:postgresql://stampy.db.elephantsql.com:5432/zoreovlw";
-    private static final String USER_NAME = "zoreovlw";
-    private static final String PASSWORD = "E-E6PE_pnorOdZyEXEoFnNFeP7sFqqso";
-
-    static {
-        try {
-            DriverManager.registerDriver(new Driver());
-        } catch (SQLException e) {
-            log.error("Unable to register JDBC driver");
-        }
-    }
-
-    static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER_NAME, PASSWORD);
-    }
-
     static ApplicationException translateSQLException(SQLException e) {
         Throwable rootCause = getRootException(e);
 
