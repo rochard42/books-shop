@@ -1,15 +1,25 @@
 package ru.bookshop.entity;
 
+import javax.persistence.*;
 import java.util.Objects;
 
+@Entity
+@Table(name = "book")
 public class Book {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "description")
     private String description;
 
+    @ManyToOne
+    @JoinColumn(name = "author")
     private Author author;
 
     public Long getId() {
@@ -51,13 +61,12 @@ public class Book {
         Book book = (Book) o;
         return Objects.equals(id, book.id) &&
                 Objects.equals(name, book.name) &&
-                Objects.equals(description, book.description) &&
-                Objects.equals(author, book.author);
+                Objects.equals(description, book.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, description, author);
+        return Objects.hash(id, name, description);
     }
 
     @Override
@@ -66,7 +75,6 @@ public class Book {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", author=" + author +
                 '}';
     }
 
