@@ -1,163 +1,50 @@
 package ru.bookshop.repository.impl;
 
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.bookshop.entity.Author;
-import ru.bookshop.entity.Book;
-import ru.bookshop.exception.ApplicationException;
-import ru.bookshop.exception.ErrorCode;
 import ru.bookshop.repository.AuthorRepository;
-import ru.bookshop.repository.impl.mapper.AuthorMapper;
-import ru.bookshop.repository.impl.mapper.BookMapper;
 
-import java.sql.*;
-import java.util.ArrayList;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
 public class AuthorRepositoryImpl implements AuthorRepository {
 
-    private final BasicDataSource dataSource;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    @Autowired
-    public AuthorRepositoryImpl(BasicDataSource dataSource) {
-        this.dataSource = dataSource;
+    @Override
+    public Author add(Author author) {
+        entityManager.persist(author);
+        return author;
     }
 
     @Override
-    @SuppressWarnings("Duplicates")
-    public Author add(Author author) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement(
-                    "insert into author (name, description) values (?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            ps.setString(1, author.getName());
-            ps.setString(2, author.getDescription());
-
-            ps.executeUpdate();
-            rs = ps.getGeneratedKeys();
-            if (!rs.next()) {
-                throw new ApplicationException(
-                        ErrorCode.INTERNAL_ERROR,
-                        "Internal error"
-                );
-            }
-
-            author.setId(rs.getLong("id"));
-
-            return author;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
+    public List<Author> get(String name) {
+        StringBuilder sb = new StringBuilder("select a from Author a");
+        if (name != null) {
+            sb.append(" where lower(a.name) like lower('%' || :name || '%')");
         }
+
+        TypedQuery<Author> query = entityManager.createQuery(sb.toString(), Author.class);
+
+        if (name != null) {
+            query.setParameter("name", name);
+        }
+
+        return query.getResultList();
     }
 
     @Override
-    public List<Author> get(String name) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-
-            StringBuilder sb = new StringBuilder("select id, name, description from author");
-            if (name != null) {
-                sb.append(" where lower(name) like lower('%' || ? || '%')");
-            }
-
-            ps = con.prepareStatement(sb.toString());
-            if (name != null) {
-                ps.setString(1, name);
-            }
-
-            rs = ps.executeQuery();
-
-            List<Author> result = new ArrayList<>();
-
-            while (rs.next()) {
-                result.add(AuthorMapper.map(rs));
-            }
-
-            return result;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
-        }
+    public Author getById(Long id) {
+        return entityManager.find(Author.class, id);
     }
 
     @Override
-    public Author getById(Long id) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement(
-                    "select a.id author_id," +
-                            "       a.name author_name," +
-                            "       a.description author_description," +
-                            "       b.id book_id," +
-                            "       b.name book_name," +
-                            "       b.description book_description" +
-                            "  from author a left join book b on a.id = b.author" +
-                            " where a.id = ?"
-            );
-            ps.setLong(1, id);
-
-            rs = ps.executeQuery();
-
-            Author author = null;
-            while (rs.next()) {
-                if (author == null) {
-                    author = AuthorMapper.map("author_", rs);
-                    author.setBooks(new ArrayList<>());
-                }
-
-                if (rs.getObject("book_id") != null) {
-                    Book book = BookMapper.map("book_", rs);
-                    book.setAuthor(author);
-
-                    author.getBooks().add(book);
-                }
-            }
-
-            return author;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
-        }
-    }
-
-    @Override
-    public Author update(Author author) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement("update author set name = ?, description = ? where id = ?");
-            ps.setString(1, author.getName());
-            ps.setString(2, author.getDescription());
-            ps.setLong(3, author.getId());
-
-            ps.executeUpdate();
-
-            return author;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(ps, con);
-        }
+    public Author update(Author author) {
+        entityManager.merge(author);
+        return author;
     }
 }
