@@ -1,120 +1,67 @@
 package ru.bookshop.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.springframework.stereotype.Component;
 import ru.bookshop.ParameterNames;
 import ru.bookshop.entity.Book;
 import ru.bookshop.exception.ApplicationException;
 import ru.bookshop.service.BookService;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
-@WebServlet(urlPatterns = Paths.BOOKS + "/*")
-public class BookController extends BaseController {
+@Path(Paths.BOOKS)
+@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+@Produces(MediaType.APPLICATION_JSON)
+@Component
+public class BookController {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    private final Map<Pattern, BaseController.RequestHandler> getHandlers = new HashMap<>();
-    private final Map<Pattern, BaseController.RequestHandler> postHandlers = new HashMap<>();
-    private final Map<Pattern, BaseController.RequestHandler> putHandlers = new HashMap<>();
+    private final BookService bookService;
 
     @Autowired
-    private BookService bookService;
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
     }
 
-    public BookController() {
-        getHandlers.put(Pattern.compile("^(/books)/?$"), this::get);
-        getHandlers.put(Pattern.compile("^(/books/)([0-9]+)$"), this::getById);
-
-        postHandlers.put(Pattern.compile("^(/books)/?$"), this::add);
-
-        putHandlers.put(Pattern.compile("^(/books/)([0-9]+)$"), this::update);
-
-        putHandlers.put(Pattern.compile("^(/books/)([0-9]+)$"), this::remove);
+    @GET
+    public List<Book> get(
+            @QueryParam(ParameterNames.NAME) String name,
+            @QueryParam(ParameterNames.AUTHOR_NAME) String authorName
+    ) throws ApplicationException {
+        return bookService.get(name, authorName);
     }
 
-    private void get(List<String> urlParts, HttpServletRequest req, HttpServletResponse resp) throws ApplicationException, IOException {
-        String name = req.getParameter(ParameterNames.NAME);
-        String authorName = req.getParameter(ParameterNames.AUTHOR_NAME);
-
-        List<Book> books = bookService.get(name, authorName);
-
-        String response = OBJECT_MAPPER.writeValueAsString(books);
-
-        resp.getWriter().write(response);
+    @GET
+    @Path(Paths.ID)
+    public Book getById(@PathParam(ParameterNames.ID) Long id) throws ApplicationException {
+        return bookService.getById(id);
     }
 
-    private void getById(List<String> urlParts, HttpServletRequest req, HttpServletResponse resp) throws ApplicationException, IOException {
-        long id = ParameterParser.parseLongInUrl("Book", urlParts.get(1));
-
-        Book book = bookService.getById(id);
-
-        String response = OBJECT_MAPPER.writeValueAsString(book);
-
-        resp.getWriter().write(response);
+    @POST
+    public Book add(
+            @FormParam(ParameterNames.NAME) String name,
+            @FormParam(ParameterNames.DESCRIPTION) String description,
+            @FormParam(ParameterNames.AUTHOR_ID) Long authorId
+    ) throws ApplicationException {
+        return bookService.add(name, description, authorId);
     }
 
-    private void add(List<String> urlParts, HttpServletRequest req, HttpServletResponse resp) throws ApplicationException, IOException {
-        Map<String, String> params = parseBody(req);
-        String name = params.get(ParameterNames.NAME);
-        String description = params.get(ParameterNames.DESCRIPTION);
-        Long authorId = ParameterParser.parseLong(ParameterNames.AUTHOR_ID, params.get(ParameterNames.AUTHOR_ID));
-
-        Book book = bookService.add(name, description, authorId);
-
-        String response = OBJECT_MAPPER.writeValueAsString(book);
-
-        resp.getWriter().write(response);
+    @PUT
+    @Path(Paths.ID)
+    public Book update(
+            @PathParam(ParameterNames.ID) Long id,
+            @FormParam(ParameterNames.NAME) String name,
+            @FormParam(ParameterNames.DESCRIPTION) String description,
+            @FormParam(ParameterNames.AUTHOR_ID) Long authorId) throws ApplicationException {
+        return bookService.update(id, name, description, authorId);
     }
 
-    private void update(List<String> urlParts, HttpServletRequest req, HttpServletResponse resp) throws ApplicationException, IOException {
-        long id = ParameterParser.parseLongInUrl("Book", urlParts.get(1));
-
-        Map<String, String> params = parseBody(req);
-        String name = params.get(ParameterNames.NAME);
-        String description = params.get(ParameterNames.DESCRIPTION);
-        Long authorId = ParameterParser.parseLong(ParameterNames.AUTHOR_ID, params.get(ParameterNames.AUTHOR_ID));
-
-        Book book = bookService.update(id, name, description, authorId);
-
-        String response = OBJECT_MAPPER.writeValueAsString(book);
-
-        resp.getWriter().write(response);
-    }
-
-    private void remove(List<String> urlParts, HttpServletRequest req, HttpServletResponse resp) throws ApplicationException {
-        long id = ParameterParser.parseLongInUrl("Book", urlParts.get(1));
-
+    @DELETE
+    @Path(Paths.ID)
+    public void delete(@PathParam(ParameterNames.ID) Long id) throws ApplicationException{
         bookService.remove(id);
     }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        doRequest(getHandlers, req, resp);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        doRequest(postHandlers, req, resp);
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        doRequest(putHandlers, req, resp);
-    }
 }
+
+

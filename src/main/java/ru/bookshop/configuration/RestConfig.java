@@ -8,6 +8,6 @@ import javax.ws.rs.ApplicationPath;
 public class RestConfig extends ResourceConfig {
 
     public RestConfig() {
-        packages("ru.bookshop.api.rest");
+        packages("ru.bookshop.api");
     }
 }
