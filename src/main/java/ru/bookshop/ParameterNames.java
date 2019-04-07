@@ -10,6 +10,8 @@ public final class ParameterNames {
 
     public static final String NAME = "name";
 
+    public static final String ID = "id";
+
     private ParameterNames() {
     }
 }
