@@ -1,192 +1,63 @@
 package ru.bookshop.repository.impl;
 
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import ru.bookshop.entity.Author;
 import ru.bookshop.entity.Book;
-import ru.bookshop.exception.ApplicationException;
-import ru.bookshop.exception.ErrorCode;
 import ru.bookshop.repository.BookRepository;
-import ru.bookshop.repository.impl.mapper.AuthorMapper;
-import ru.bookshop.repository.impl.mapper.BookMapper;
 
-import java.sql.*;
-import java.util.ArrayList;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 @Repository
 public class BookRepositoryImpl implements BookRepository {
 
-    private final BasicDataSource dataSource;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    @Autowired
-    public BookRepositoryImpl(BasicDataSource dataSource) {
-        this.dataSource = dataSource;
+    @Override
+    public Book add(Book book) {
+        entityManager.persist(book);
+        return book;
     }
 
     @Override
-    @SuppressWarnings("Duplicates")
-    public Book add(Book book) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
+    public List<Book> get(String name, String authorName) {
+        StringBuilder sb = new StringBuilder("select b from Book b where 1=1");
 
-            ps = con.prepareStatement(
-                    "insert into book (name, description, author) values (?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            ps.setString(1, book.getName());
-            ps.setString(2, book.getDescription());
-            ps.setLong(3, book.getAuthor().getId());
-
-            ps.executeUpdate();
-            rs = ps.getGeneratedKeys();
-            if (!rs.next()) {
-                throw new ApplicationException(
-                        ErrorCode.INTERNAL_ERROR,
-                        "Internal error"
-                );
-            }
-
-            book.setId(rs.getLong("id"));
-
-            return book;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
+        if (name != null) {
+            sb.append(" and lower(b.name) like lower('%' || :name || '%')");
         }
+
+        if (authorName != null) {
+            sb.append(" and lower(b.author.name) like lower('%' || :authorName || '%')");
+        }
+
+        TypedQuery<Book> query = entityManager.createQuery(sb.toString(), Book.class);
+
+        if (name != null) {
+            query.setParameter("name", name);
+        }
+        if (authorName != null) {
+            query.setParameter("authorName", authorName);
+        }
+
+        return query.getResultList();
     }
 
     @Override
-    public List<Book> get(String name, String authorName) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-
-            StringBuilder sb = new StringBuilder("select");
-
-            sb.append(" b.id book_id, b.name book_name, b.description book_description,");
-            sb.append(" a.id author_id, a.name author_name, a.description author_description");
-            sb.append(" from book b left join author a on b.author = a.id where 1=1");
-
-            if (name != null) {
-                sb.append(" and lower(b.name) like lower('%' || ? || '%')");
-            }
-            if (authorName != null) {
-                sb.append(" and lower(a.name) like lower('%' || ? || '%')");
-            }
-
-            ps = con.prepareStatement(sb.toString());
-
-            int paramIndex = 1;
-            if (name != null) {
-                ps.setString(paramIndex++, name);
-            }
-            if (authorName != null) {
-                ps.setString(paramIndex++, authorName);
-            }
-
-            rs = ps.executeQuery();
-
-            List<Book> books = new ArrayList<>();
-            while (rs.next()) {
-                Author author = AuthorMapper.map("author_", rs);
-                Book book = BookMapper.map("book_", rs);
-                book.setAuthor(author);
-
-                books.add(book);
-            }
-
-            return books;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
-        }
+    public Book getById(Long id) {
+        return entityManager.find(Book.class, id);
     }
 
     @Override
-    public Book getById(Long id) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement(
-                    "select a.id author_id," +
-                            "   a.name author_name," +
-                            "   a.description author_description," +
-                            "   b.id book_id," +
-                            "   b.name book_name," +
-                            "   b.description book_description" +
-                            "   from book b left join author a on b.author = a.id" +
-                            "   where b.id = ?"
-            );
-
-            ps.setLong(1, id);
-
-            rs = ps.executeQuery();
-
-            Book book = null;
-            if (rs.next()) {
-                Author author = AuthorMapper.map("author_", rs);
-                book = BookMapper.map("book_", rs);
-                book.setAuthor(author);
-            }
-
-            return book;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(rs, ps, con);
-        }
+    public Book update(Book book) {
+        entityManager.merge(book);
+        return book;
     }
 
     @Override
-    public Book update(Book book) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement("update book set name = ?, description = ?, author = ? where id = ?");
-            ps.setString(1, book.getName());
-            ps.setString(2, book.getDescription());
-            ps.setLong(3, book.getAuthor().getId());
-            ps.setLong(4, book.getId());
-
-            ps.executeUpdate();
-
-            return book;
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(ps, con);
-        }
-    }
-
-    @Override
-    public void remove(Book book) throws ApplicationException {
-        Connection con = null;
-        PreparedStatement ps = null;
-        try {
-            con = dataSource.getConnection();
-
-            ps = con.prepareStatement("delete from book where id = ?");
-            ps.setLong(1, book.getId());
-
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw JdbcUtils.translateSQLException(e);
-        } finally {
-            JdbcUtils.closeQuietly(ps, con);
-        }
+    public void remove(Book book) {
+        entityManager.remove(book);
     }
 }

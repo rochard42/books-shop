@@ -9,10 +9,9 @@ import ru.bookshop.exception.ApplicationException;
 import ru.bookshop.exception.ErrorCode;
 import ru.bookshop.repository.AuthorRepository;
 import ru.bookshop.repository.BookRepository;
-import ru.bookshop.repository.impl.AuthorRepositoryImpl;
-import ru.bookshop.repository.impl.BookRepositoryImpl;
 import ru.bookshop.service.BookService;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -29,6 +28,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book add(String name, String description, Long authorId) throws ApplicationException {
         Validator.checkNotNull(ParameterNames.NAME, name);
         Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
@@ -45,6 +45,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book getById(long id) throws ApplicationException {
         Book book = bookRepository.getById(id);
 
@@ -59,11 +60,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public List<Book> get(String name, String authorName) throws ApplicationException {
         return bookRepository.get(name, authorName);
     }
 
     @Override
+    @Transactional
     public Book update(long id, String name, String description, Long authorId) throws ApplicationException {
         Validator.checkNotNull(ParameterNames.NAME, name);
         Validator.checkNotNull(ParameterNames.DESCRIPTION, description);
@@ -81,6 +84,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public void remove(long id) throws  ApplicationException{
         Book book = getById(id);
 
